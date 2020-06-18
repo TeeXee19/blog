@@ -20,4 +20,24 @@ class SessionsController < ApplicationController
         flash[:success] = "You have logged out"
         redirect_to root_path
     end
+
+    def User.from_omniauth(auth)
+    where(email: auth.info.email).first_or_initialize do |user|
+      user.user_name = auth.info.name
+      user.email = auth.info.email
+      user.password = SecureRandom.hex
+    end
+  end
+
+  def omniauth
+    @user = User.from_omniauth(auth)
+    @user.save
+    session[:user_id] = @user.id
+            redirect_to users_path(@user)
+  end  
+  private  
+
+      def auth
+        request.env['omniauth.auth']
+      end
 end
